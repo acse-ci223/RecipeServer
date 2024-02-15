@@ -3,3 +3,4 @@ numpy
 openai
 flask
 flask-cors
+requests
