@@ -9,7 +9,7 @@ __all__ = ['Server']
 class Server:
     def __init__(self):
         self.app = Flask(__name__)
-        CORS(self.app)  # Apply CORS to your Flask application
+        CORS(self.app)
         self.setup_routes()
         self.processor = Processor()
 
@@ -20,12 +20,13 @@ class Server:
             recipe_name = data.get('name')
             if recipe_name:
                 res = self.process_recipe(recipe_name)
-                return jsonify({'message': f'Recipe name received: {recipe_name}'}), 200
+                return jsonify({"message": res.to_dict()}), 200
             else:
                 return jsonify({'error': 'Recipe name is missing'}), 400
 
     def process_recipe(self, recipe):
-        res = self.processor.process(recipe)
+        download = self.processor.download_recipe(recipe)
+        res = self.processor.process(download)
         return res
 
     def run(self):
