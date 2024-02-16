@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 from .Processor import Processor
+from .Grapher import Grapher
 
 __all__ = ['Server']
 
@@ -12,6 +13,7 @@ class Server:
         CORS(self.app)
         self.setup_routes()
         self.processor = Processor()
+        self.grapher = Grapher()
 
     def setup_routes(self):
         @self.app.route('/recipe', methods=['POST'])
@@ -20,7 +22,8 @@ class Server:
             recipe_name = data.get('name')
             if recipe_name:
                 res = self.process_recipe(recipe_name)
-                return jsonify({"message": res.to_dict()}), 200
+                graph = self.grapher.graph(res.to_dict())
+                return jsonify({"graph": graph}), 200
             else:
                 return jsonify({'error': 'Recipe name is missing'}), 400
 

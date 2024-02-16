@@ -45,11 +45,11 @@ def is_valid_json(json_string):
         data = json.loads(json_string)
         expected_structure = {
             "step_number": {
-                "time": [0, 0],  # Placeholder for minimum and maximum time validation
+                "time": [0, 0],
                 "step_instruction": {
                     "number": {
                         "instruction_number": "instruction",
-                        "time": 0  # Placeholder for estimated time validation
+                        "time": [0, 0]
                     }
                 }
             }
@@ -65,39 +65,9 @@ class Processor:
         self.__spoonacular_key = os.getenv("SPOONACULAR")
         self.client = OpenAI(api_key=self.__open_ai_key)
         self.seed = 100
+        self.__diet = ["None", "Vegetarian", "Vegan", "Gluten-Free", "Ketogenic"]
 
     def download_recipe(self, recipe_name):
-        sample_recipe = """
-        A recipe for making a classic Italian lasagna.
-        Ingredients:
-        - 1 pound sweet Italian sausage
-        - 3/4 pound lean ground beef
-        - 1/2 cup minced onion
-        - 2 cloves garlic, crushed
-        - 1 (28 ounce) can crushed tomatoes
-        - 2 (6 ounce) cans tomato paste
-        - 2 (6.5 ounce) cans canned tomato sauce
-        - 1/2 cup water
-        - 2 tablespoons white sugar
-        - 1 1/2 teaspoons dried basil leaves
-        - 1/2 teaspoon fennel seeds
-        - 1 teaspoon Italian seasoning
-        - 1 tablespoon salt
-        - 1/4 teaspoon ground black pepper
-        - 4 tablespoons chopped fresh parsley
-        - 12 lasagna noodles
-        - 16 ounces ricotta cheese
-        - 1 egg
-        - 3/4 teaspoon salt
-        - 3/4 pound mozzarella cheese, sliced
-        - 3/4 cup grated Parmesan cheese
-        Directions:
-        1. In a Dutch oven, cook sausage, ground beef, onion, and garlic over medium heat until well browned. Stir in crushed tomatoes, tomato paste, tomato sauce, and water. Season with sugar, basil, fennel seeds, Italian seasoning, 1 tablespoon salt, pepper, and 2 tablespoons parsley. Simmer, covered, for about 1 1/2 hours, stirring occasionally.
-        2. Bring a large pot of lightly salted water to a boil. Cook lasagna noodles in boiling water for 8 to 10 minutes. Drain noodles, and rinse with cold water. In a mixing bowl, combine ricotta cheese with egg, remaining parsley, and 1/2 teaspoon salt.
-        3. Preheat oven to 375 degrees F (190 degrees C).
-        4. To assemble, spread 1 1/2 cups of meat sauce in the bottom of a 9x13 inch baking dish. Arrange 6 noodles lengthwise over meat sauce. Spread with one half of the ricotta cheese mixture. Top with a third of mozzarella cheese slices. Spoon 1 1/2 cups meat sauce over mozzarella, and sprinkle with 1/4 cup Parmesan cheese. Repeat layers, and top with remaining mozzarella and Parmesan cheese. Cover with foil: to prevent sticking, either spray foil with cooking spray, or make sure the foil does not touch the cheese.
-        5. Bake in preheated oven for 25 minutes. Remove foil, and bake an additional 25 minutes. Cool for 15 minutes before serving.
-        """
 
         def get_recipes(ingredients, diet):
             url = "https://api.spoonacular.com/recipes/complexSearch"
@@ -111,13 +81,12 @@ class Processor:
             response = requests.get(url, params=params)
             return response.json()
 
-        recipe = get_recipes(recipe_name, "None")
+        recipe = get_recipes(recipe_name, self.__diet[0])
         recipe = recipe["results"][0]
         source = recipe.get("sourceUrl")
         image = recipe.get("image")
         instructions = recipe.get("analyzedInstructions")[0]["steps"]
         instructions = "\n".join(list(map(lambda x: x["step"], instructions)))
-
         return instructions
 
     def process(self, recipe):
@@ -136,7 +105,11 @@ class Processor:
         {
         "step_number": {
             "time": [minimum_time in minutes, maximum_time in minutes],
-            "step_instruction": { "number": {"instruction_number":instruction, "time":estimated time in minutes} }
+            "step_instruction": { "number": {
+                                                "instruction": instruction_details,
+                                                "time": [minimum_estimated_time, maximum_estimated_time]
+                                            }
+                                }
             }
         }
 

@@ -15,4 +15,11 @@ class Recipe:
         return json.dumps(self.recipe_json)
 
     def to_dict(self):
-        return self.recipe_json
+        if not isinstance(self.recipe_json, list):
+            if isinstance(self.recipe_json, str):
+                self.recipe_json = json.loads(self.recipe_json)
+            elif isinstance(self.recipe_json, dict):
+                return [self.recipe_json]
+            self.to_dict()
+        else:
+            return self.recipe_json
