@@ -25,6 +25,8 @@ class Grapher:
 
             mermaid_graph += "subgraph step_{}[Step {} - {}]\n".format(step_number, step_number, t)
 
+            mermaid_graph += "direction LR\n\n"
+
             instructions = []
 
             for instruction in step_instruction:
@@ -53,7 +55,7 @@ class Grapher:
         mermaid_graph += "\n"
         mermaid_graph += " --> ".join(subgraphs)
 
-        self.save(mermaid_graph, "sample.md")
+        # self.save(mermaid_graph, "sample.md")
 
         return mermaid_graph
 
